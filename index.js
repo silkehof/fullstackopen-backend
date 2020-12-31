@@ -1,3 +1,4 @@
+const { response } = require('express')
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
@@ -27,7 +28,24 @@ let persons = [
     }
 ]
 
-app.use(morgan('tiny'))
+morgan.token('body', function(request, response) {
+    const body = request.body
+    return JSON.stringify(body)
+})
+
+const requestLogger = (tokens, request, response) => {
+   return [
+        tokens.method(request, response),
+        tokens.url(request, response),
+        tokens.status(request, response),
+        tokens.res(request, response, 'content-length'), '-',
+        tokens['response-time'](request, response), 'ms ',
+        tokens.body(request, response)
+    ].join(' ')
+}
+
+const myMiddlewareFunction = morgan(requestLogger)
+app.use(myMiddlewareFunction)
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
