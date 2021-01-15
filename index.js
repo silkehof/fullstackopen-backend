@@ -39,10 +39,12 @@ app.use(morganMiddlewareFunction)
 //    response.send(responseText)
 //})
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(people => {
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+    .then(people => {
         response.json(people)
     })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -65,7 +67,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if ((!body.name) || (!body.number)) {
@@ -79,10 +81,18 @@ app.post('/api/persons', (request, response) => {
         number: body.number
     })
 
-    person.save().then(savedPerson => {
+    person.save()
+    .then(savedPerson => {
         response.json(savedPerson)
     })
+    .catch(error => next(error))
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
