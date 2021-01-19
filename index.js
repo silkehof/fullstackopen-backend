@@ -30,14 +30,18 @@ const requestLogger = (tokens, request, response) => {
 const morganMiddlewareFunction = morgan(requestLogger)
 app.use(morganMiddlewareFunction)
 
-//const timeElapsed = Date.now()
-//const today = new Date(timeElapsed)
-//
-//app.get('/info', (request, response) => {
-//    var responseText = 'The phonebook currently contains ' + persons.length + ' entries.<br>'
-//    responseText += '<br>Request was made on ' + today
-//    response.send(responseText)
-//})
+const timeElapsed = Date.now()
+const today = new Date(timeElapsed)
+
+app.get('/info', (request, response, next) => {
+    Person.countDocuments({})
+        .then(count => {
+            var responseText = `The phonebook currently contains ${count} entries.<br>`
+            responseText += '<br>Request was made on ' + today
+            response.send(responseText)
+        })
+        .catch(error => next(error))
+})
 
 app.get('/api/persons', (request, response, next) => {
     Person.find({})
